@@ -3,6 +3,7 @@ import { useLocalStorage } from '@uidotdev/usehooks';
 import Image from 'next/image';
 import { MutableRefObject, PropsWithChildren, ReactElement, forwardRef, use, useEffect, useRef, useState } from 'react';
 import { cn } from './app/cn';
+import dynamic from 'next/dynamic';
 
 type TileType = keyof typeof tileComponents;
 type Item = keyof typeof itemComponents;
@@ -412,7 +413,9 @@ const Game = forwardRef<HTMLDivElement>((_props, ref) => {
 
 Game.displayName = 'Game';
 
-export const Shell = () => {
+const InnerShell = () => {
+  'use client';
+
   const [session, setSession] = useLocalStorage<{
     name: string;
   } | null>('session', null);
@@ -432,3 +435,7 @@ export const Shell = () => {
     </Camera>
   );
 };
+
+export const Shell = dynamic(() => Promise.resolve(InnerShell), {
+  ssr: false,
+});
