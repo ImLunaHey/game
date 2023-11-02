@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "fix:powerglitch": "node ./fix-powerglitch.js",
+    "build": "npm run fix:powerglitch && next build",
     "start": "next start",
     "lint": "next lint"
   },
