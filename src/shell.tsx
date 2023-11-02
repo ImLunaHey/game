@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { Camera } from './components/camera';
 import { AssetLoader } from './components/asset-loader';
-import { StartButton } from './components/ui/start-button';
+import { JoinButton } from './components/ui/join-button';
 import { Game } from './components/game';
 
 const assetsToPreload = [
@@ -31,13 +31,11 @@ export const Shell = dynamic(
         setSession({ name });
       };
 
-      const playerRef = useRef<HTMLDivElement>(null);
-
-      if (!session) return <StartButton joinGame={(name) => joinGame(name)} />;
+      if (!session) return <JoinButton joinGame={(name) => joinGame(name)} />;
       return (
         <AssetLoader assets={assetsToPreload}>
-          <Camera ref={playerRef}>
-            <Game ref={playerRef} />
+          <Camera>
+            <Game />
           </Camera>
         </AssetLoader>
       );

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export const StartButton: React.FC<{
+export const JoinButton: React.FC<{
   joinGame: (name: string) => void;
 }> = ({ joinGame }) => {
   const [name, setName] = useState('');

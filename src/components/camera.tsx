@@ -1,15 +1,11 @@
-import { forwardRef, ReactElement, useState, useEffect, MutableRefObject } from 'react';
+import { useState, useEffect, PropsWithChildren } from 'react';
+import { playerStore } from '../stores/player-store';
 
-export const Camera = forwardRef<
-  HTMLDivElement,
-  {
-    children: ReactElement;
-  }
->(({ children }, ref) => {
+export const Camera: React.FC<PropsWithChildren> = ({ children }) => {
   const [cameraPosition, setCameraPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    const element = (ref as MutableRefObject<HTMLDivElement | null>)?.current;
+    const element = playerStore.getRef().current;
 
     if (!element) {
       return;
@@ -64,8 +60,7 @@ export const Camera = forwardRef<
       resizeObserver.disconnect();
       mutationObserver.disconnect();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ref]);
+  }, [cameraPosition.x, cameraPosition.y]);
 
   return (
     <div className="absolute overflow-hidden border max-w-[500px] max-h-[500px] h-fit w-fit">
@@ -80,6 +75,4 @@ export const Camera = forwardRef<
       </div>
     </div>
   );
-});
-
-Camera.displayName = 'Camera';
+};
