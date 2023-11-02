@@ -1,5 +1,5 @@
 'use client';
-import { Shell } from '../game';
+import { Shell } from '../shell';
 
 export default function Home() {
   return (
