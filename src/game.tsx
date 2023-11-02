@@ -1,7 +1,7 @@
 'use client';
 import { useLocalStorage } from '@uidotdev/usehooks';
 import Image from 'next/image';
-import { MutableRefObject, PropsWithChildren, ReactElement, forwardRef, use, useEffect, useRef, useState } from 'react';
+import { MutableRefObject, PropsWithChildren, ReactElement, forwardRef, useEffect, useRef, useState } from 'react';
 import { cn } from './app/cn';
 import dynamic from 'next/dynamic';
 
@@ -98,7 +98,7 @@ const TileRow: React.FC<{
         const item = items.find((item) => item.position[0] === x && item.position[1] === y);
         const Item = item && itemComponents[item?.type];
         return (
-          <>
+          <div key={`tile_row_${x}_${y}`}>
             {Item && (
               <div
                 className="absolute h-10 w-10"
@@ -106,12 +106,13 @@ const TileRow: React.FC<{
                   top: y * 40,
                   left: x * 40,
                 }}
+                key={`item_${x}-${y}`}
               >
                 <Item />
               </div>
             )}
-            <SingleTile key={y} type={tile} x={x} y={y} />
-          </>
+            <SingleTile key={`tile_${x}-${y}`} type={tile} x={x} y={y} />
+          </div>
         );
       })}
     </div>
@@ -405,13 +406,69 @@ const Game = forwardRef<HTMLDivElement>((_props, ref) => {
     <>
       <Player ref={ref} scene={scene} setScene={setScene} />
       {scene.map.map((row, x) => (
-        <TileRow items={scene.items ?? []} map={row} key={x} x={x} />
+        <TileRow items={scene.items ?? []} map={row} key={`tile_row_${x}`} x={x} />
       ))}
     </>
   );
 });
 
 Game.displayName = 'Game';
+
+const assetsToPreload = [
+  '/images/characters/bob/down.png',
+  '/images/characters/bob/up.png',
+  '/images/characters/bob/left.png',
+  '/images/characters/bob/right.png',
+  '/images/floors/tile.png',
+  '/images/items/portal.png',
+];
+
+let isPreloaded = false;
+const AssetLoader: React.FC<{
+  assets: string[];
+  children: ReactElement;
+}> = ({ assets, children }) => {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (isPreloaded) return;
+    isPreloaded = true;
+    const promises = assets.map((src, index) => {
+      return new Promise<void>((resolve) => {
+        const image = new window.Image();
+        image.src = src;
+        image.onload = () => {
+          setTimeout(() => {
+            console.log('Loaded', src);
+            setProgress((progress) => progress + 100 / assets.length);
+            resolve();
+          }, index * 200);
+        };
+      });
+    });
+
+    Promise.all(promises).then(() => {
+      console.log('All assets loaded');
+    });
+  }, [assets]);
+
+  if (progress < 100) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center">
+        <div className="relative h-2 w-64 bg-gray-200 rounded overflow-hidden">
+          <div
+            className="absolute h-2 bg-green-500"
+            style={{
+              width: `${progress}%`,
+            }}
+          ></div>
+        </div>
+      </div>
+    );
+  }
+
+  return children;
+};
 
 const InnerShell = () => {
   'use client';
@@ -430,9 +487,11 @@ const InnerShell = () => {
 
   if (!session) return <StartButton joinGame={(name) => joinGame(name)} />;
   return (
-    <Camera ref={playerRef}>
-      <Game ref={playerRef} />
-    </Camera>
+    <AssetLoader assets={assetsToPreload}>
+      <Camera ref={playerRef}>
+        <Game ref={playerRef} />
+      </Camera>
+    </AssetLoader>
   );
 };
 
